@@ -1,6 +1,22 @@
 import os
-import sys
+import re
 import argparse
+
+RCCL_BENCH_RE = (
+    r"(?P<HEADER>.+)NCCL INFO (?P<METHOD>\w+):"
+    r" opCount (?P<OP_COUNT>\d+)"
+    r" sendbuff (?P<SEND_BUFF>\w+)"
+    r" recvbuff (?P<RECV_BUFF>\w+)"
+    r" count (?P<COUNT>\d+)"
+    r" datatype (?P<DATATYPE>\d+)"
+    r" op (?P<OP>\d+)"
+    r" root (?P<ROOT>\d+)"
+    r" comm (?P<COMM>\w+)"
+    r" \[nranks=(?P<NRANKS>\d+)\]"
+    r" stream (?P<STREAM>\w+)"
+    r" task (?P<TASK>\d+)"
+    r" globalrank (?P<GLOBALRANK>\d+)"
+)
 
 coll_op_map = {
             "Broadcast": "broadcast_perf",
@@ -70,20 +86,21 @@ def parse_nccl_log(nccl_lines):
     commands = []
     for j in range(len(nccl_lines)):
         line = nccl_lines[j]
-        split_list = line.split(" ")
-        comm = split_list[split_list.index("INFO") + 1].replace(":", "")
-        count = split_list[split_list.index("count") + 1]
-        datatype = split_list[split_list.index("datatype") + 1]
-        op_type = split_list[split_list.index("op") + 1]
-        root = split_list[split_list.index("root") + 1]
-        nnranks = next(item for item in split_list if 'nranks' in item).split("=")[1].replace("]", "")
-
-        #print (comm)
-        #print (count)
-        #print (datatype)
-        #print (op_type)
-        #print (root)
-        #print (nnranks)
+        match = re.match(RCCL_BENCH_RE, line)
+        if not match:
+            continue
+        comm = match.group("METHOD")
+        count = match.group("COUNT")
+        datatype = match.group("DATATYPE")
+        op_type = match.group("OP")
+        root = match.group("ROOT")
+        nnranks = match.group("NRANKS")
+        # print ("comm", comm)
+        # print ("count", count)
+        # print ("datatype", datatype)
+        # print ("op_type", op_type)
+        # print ("root", root)
+        # print ("nnranks", nnranks)
 
         total_bytes = int(count) * data_type_bytes_map[datatype]
 

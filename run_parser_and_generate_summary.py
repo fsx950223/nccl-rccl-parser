@@ -3,6 +3,7 @@ import sys
 import argparse
 
 def main():
+
     debug_log = os.path.abspath(args.nccl_debug_log)
 
     ##### Firstly call rccl_nccl_parser.py to parse the ......log.txt file
@@ -14,7 +15,8 @@ def main():
       
     ## change directory to rccl-tests/nccl-tests
     if args.rocm:
-        rccl_tests_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), "rccl-tests")
+        real_path = os.path.realpath(__file__)
+        rccl_tests_path = os.path.join(os.path.dirname(real_path), "rccl-tests")
         os.system("cp net_unique.sh " + rccl_tests_path)
         os.chdir(rccl_tests_path)
         if os.system("./install.sh --rccl_home=/opt/rocm  2>&1"):
@@ -27,8 +29,7 @@ def main():
             print ("ERROR: Unable to run rccl-tests properly.")
             sys.exit(1)
         os.system("mv rccl_perf_log.txt ../")
-        os.chdir(os.path.join(os.path.dirname(os.path.realpath(__file__))))
-
+        os.chdir(os.path.join(os.path.dirname(real_path)))
         print (os.getcwd())
         summary_cmd = "python generate_summary.py --log-file rccl_perf_log.txt --script-file net_unique.sh --count-file net_counts.csv"
         os.system(summary_cmd)
