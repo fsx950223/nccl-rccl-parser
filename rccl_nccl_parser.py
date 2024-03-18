@@ -50,7 +50,7 @@ data_types_map = {
                 "6" : "half",
                 "7" : "float",
                 "8" : "double",
-                "9" : "bf16",
+                "9" : "bfloat16",
                 #"10" : "ncclNumTypes Equivalent?"
              }
 
